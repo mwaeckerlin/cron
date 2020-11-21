@@ -1,0 +1,3 @@
+#!/bin/sh
+
+echo "RUNNING CRONJOB: $(date) $(pwd) $0"

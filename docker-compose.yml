@@ -1,0 +1,38 @@
+version: '3.5'
+services:
+  cron:
+    image: mwaeckerlin/cron
+    build:
+      context: .
+      target: production
+    volumes:
+      - type: bind
+        source: ./demo
+        target: /etc/periodic/min/demo
+      - type: bind
+        source: ./demo
+        target: /etc/periodic/5min/demo
+      - type: bind
+        source: ./demo
+        target: /etc/periodic/10min/demo
+      - type: bind
+        source: ./demo
+        target: /etc/periodic/15min/demo
+      - type: bind
+        source: ./demo
+        target: /etc/periodic/30min/demo
+      - type: bind
+        source: ./demo
+        target: /etc/periodic/daily/demo
+      - type: bind
+        source: ./demo
+        target: /etc/periodic/hourly/demo
+      - type: bind
+        source: ./demo
+        target: /etc/periodic/weekly/demo
+      - type: bind
+        source: ./demo
+        target: /etc/periodic/monthly/demo
+      - type: bind
+        source: ./demo
+        target: /etc/periodic/yearly/demo
