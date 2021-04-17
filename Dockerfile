@@ -4,7 +4,6 @@ COPY crontabs /etc/crontabs/$RUN_USER
 RUN chmod go= /etc/crontabs/$RUN_USER
 RUN rm /etc/crontabs/root
 RUN mkdir /etc/periodic/min /etc/periodic/5min /etc/periodic/10min /etc/periodic/30min /etc/periodic/yearly
-RUN mkdir /var/tmp
 RUN $ALLOW_USER /usr/sbin/crond /var/tmp
 RUN setcap cap_setgid=ep /usr/sbin/crond
 
