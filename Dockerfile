@@ -7,8 +7,7 @@ RUN mkdir /etc/periodic/min /etc/periodic/5min /etc/periodic/10min /etc/periodic
 RUN $ALLOW_USER /usr/sbin/crond /var/tmp
 RUN setcap cap_setgid=ep /usr/sbin/crond
 
-FROM mwaeckerlin/scratch as production
-ENV CONTAINERNAME "cron"
+FROM mwaeckerlin/scratch as prepare
 COPY --from=build /lib/ld-musl-x86_64.so.* /lib/
 COPY --from=build /usr/lib/libcap.so* /usr/lib/
 COPY --from=build /bin /bin
@@ -19,4 +18,8 @@ COPY --from=build /etc/periodic /etc/periodic
 COPY --from=build /var/spool/cron /var/spool/cron
 COPY logger /bin/logger
 COPY entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+
+FROM mwaeckerlin/scratch as production
+ENV CONTAINERNAME "cron"
+COPY --from=prepare / /
+CMD ["/entrypoint.sh"]
