@@ -2,7 +2,7 @@
 
 Register of all tests, grouped by kind and sorted by the [FEATURES.md](FEATURES.md) number each test covers. `npm test` runs everything; the guard `tests/docs-contract.sh` fails when a feature has no test entry here. Tests are never skipped.
 
-The e2e stack (`tests/e2e/`) runs an image derived from `mwaeckerlin/cron` the way the README describes it, with real programs from Alpine's coreutils, the project's demo image, and an image with a broken crontab.
+The e2e stack (`tests/e2e/`) builds `mwaeckerlin/cron` from this project's source and derives every test image from that build, never from a registry: an image derived the way the README describes it, with real programs from Alpine's coreutils, the project's demo image, and an image with a broken crontab.
 
 ## E2E — running containers (`tests/run-e2e.sh`)
 

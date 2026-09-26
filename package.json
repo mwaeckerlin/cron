@@ -1,6 +1,6 @@
 {
   "name": "@mwaeckerlin/cron",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "scripts": {
     "build": "docker compose build",
     "start": "docker compose up --build --force-recreate --remove-orphans",
@@ -11,6 +11,6 @@
     "test": "npm run test:docs && npm run test:image && npm run test:e2e",
     "test:docs": "bash tests/docs-contract.sh",
     "test:image": "npm run build && bash tests/image-contract.sh mwaeckerlin/cron mwaeckerlin/cron-demo",
-    "test:e2e": "npm run build && bash tests/run-e2e.sh"
+    "test:e2e": "bash tests/run-e2e.sh"
   }
 }

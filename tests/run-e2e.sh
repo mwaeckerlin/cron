@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # End to end tests for mwaeckerlin/cron, against the stack in tests/e2e/.
-# The images mwaeckerlin/cron and mwaeckerlin/cron-demo must be built
-# first (npm run test:e2e does that).
+# The stack builds mwaeckerlin/cron from this project's source and derives
+# every test image from that build, never from a registry.
 #
 # The jobs run every minute, so the suite waits for the first full minute
 # after the start: about one to two minutes.

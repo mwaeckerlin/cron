@@ -1,5 +1,8 @@
 # Changelog
 
+- 2026-09-26 **1.4.2**
+    - The end to end suite tests the image built in the same run on every architecture; it had tested the last published image, so arm64 failed on an image that existed only for amd64
+
 - 2026-09-26 **1.4.1**
     - The image is headless now: no shell, no busybox, only the cron program, below 1MB. A derived image brings exactly the programs its jobs need, and nothing an attacker could use besides
         - jobs run their program directly; a script needs its interpreter in the derived image, and shell syntax in a crontab line is refused with a message
