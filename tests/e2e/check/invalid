@@ -1,0 +1,11 @@
+61 * * * * /bin/echo x
+* * * /bin/echo
+* * * * * /bin/echo a | /bin/echo b
+* * * * * /bin/echo $HOME
+* * * * * /usr/bin/does-not-exist
+0 0 30 2 * /bin/echo x
+@sometimes /bin/echo x
+* * * * * /bin/echo "open
+* * * * * /etc/cron-e2e/schedule
+* * * * mon-xyz /bin/echo x
+* * * * * /bin/echo "valid line between the errors"

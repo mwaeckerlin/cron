@@ -1,0 +1,26 @@
+# e2e stack of mwaeckerlin/cron, driven by tests/run-e2e.sh
+#
+# `cron` is an image derived from mwaeckerlin/cron with real programs and
+# a crontab, `demo` is the example image of the project, `broken` carries
+# a crontab with an error and must refuse to start.
+
+name: cron-e2e
+
+services:
+
+  cron:
+    image: mwaeckerlin/cron-e2e
+    build: .
+    environment:
+      CRON_DEBUG: "1"
+      CRON_E2E_CONTAINER: "from the container"
+      CRON_E2E_SCHEDULE: "* * * * *"
+      CRON_E2E_WORDS: "words from the environment"
+
+  demo:
+    image: mwaeckerlin/cron-demo
+
+  broken:
+    image: mwaeckerlin/cron-e2e-broken
+    build: broken
+    profiles: [broken]

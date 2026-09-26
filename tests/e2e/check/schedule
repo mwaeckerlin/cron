@@ -1,0 +1,10 @@
+*/15 * * * * /bin/echo a
+30 4 1,15 * * /bin/echo b
+0 12 * * mon-fri /bin/echo c
+0 0 29 2 * /bin/echo d
+0 0 13 * 5 /bin/echo e
+@monthly /bin/echo f
+0 22 * * 7 /bin/echo g
+5-10/2 1 * jan,jul * /bin/echo h
+0 0 * * * /bin/echo i
+@reboot /bin/echo j

@@ -1,0 +1,15 @@
+# Runs every executable file in /etc/periodic/<interval>, in name order.
+# A derived image copies its programs there, or brings a crontab file of
+# its own to /etc/cron.d for any other schedule.
+#
+# min  hour day month weekday command
+*      *    *   *     *       /usr/bin/cron --run-parts /etc/periodic/min
+*/5    *    *   *     *       /usr/bin/cron --run-parts /etc/periodic/5min
+*/10   *    *   *     *       /usr/bin/cron --run-parts /etc/periodic/10min
+*/15   *    *   *     *       /usr/bin/cron --run-parts /etc/periodic/15min
+*/30   *    *   *     *       /usr/bin/cron --run-parts /etc/periodic/30min
+0      *    *   *     *       /usr/bin/cron --run-parts /etc/periodic/hourly
+0      2    *   *     *       /usr/bin/cron --run-parts /etc/periodic/daily
+0      3    *   *     6       /usr/bin/cron --run-parts /etc/periodic/weekly
+0      5    1   *     *       /usr/bin/cron --run-parts /etc/periodic/monthly
+0      1    1   1     *       /usr/bin/cron --run-parts /etc/periodic/yearly

@@ -1,0 +1,3 @@
+${CRON_E2E_NOT_SET} /bin/echo x
+* * * * * /bin/echo ${1BAD}
+* * * * * /bin/echo ${OPEN

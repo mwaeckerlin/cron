@@ -1,0 +1,2 @@
+${CRON_E2E_SCHEDULE} /bin/echo ${CRON_E2E_WORDS} end
+@reboot /bin/echo "${CRON_E2E_WORDS}"

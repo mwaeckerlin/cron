@@ -1,25 +1,22 @@
-FROM mwaeckerlin/very-base as build
-RUN $PKG_INSTALL dcron libcap
-COPY crontabs /etc/crontabs/$RUN_USER
-RUN chmod go= /etc/crontabs/$RUN_USER
-RUN rm /etc/crontabs/root
-RUN mkdir /etc/periodic/min /etc/periodic/5min /etc/periodic/10min /etc/periodic/30min /etc/periodic/yearly
-RUN $ALLOW_USER /usr/sbin/crond /var/tmp
-RUN setcap cap_setgid=ep /usr/sbin/crond
+FROM mwaeckerlin/very-base AS cron
+RUN $PKG_INSTALL g++
+COPY cron.cpp .
+RUN g++ -static -Os -flto=auto -fno-rtti -ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,-s -std=c++20 -o cron cron.cpp
+RUN strip -s -R .comment -R .gnu.version --strip-unneeded cron
 
-FROM mwaeckerlin/scratch as prepare
-COPY --from=build /lib/ld-musl-x86_64.so.* /lib/
-COPY --from=build /usr/lib/libcap.so* /usr/lib/
-COPY --from=build /bin /bin
-COPY --from=build --chown=$RUN_USER /tmp /tmp
-COPY --from=build /usr/sbin /usr/sbin
-COPY --from=build --chown=$RUN_USER /etc/crontabs/$RUN_USER /etc/crontabs/$RUN_USER
-COPY --from=build /etc/periodic /etc/periodic
-COPY --from=build /var/spool/cron /var/spool/cron
-COPY logger /bin/logger
-COPY entrypoint.sh /entrypoint.sh
+# collect the whole runtime tree in /root/: the static cron binary, its
+# crontab for the periodic directories, and writable temporary directories
+FROM mwaeckerlin/very-base AS build
+RUN mkdir -p /root/usr/bin /root/etc/cron.d /root/tmp /root/var/tmp
+RUN mkdir -p /root/etc/periodic/min /root/etc/periodic/5min /root/etc/periodic/10min /root/etc/periodic/15min /root/etc/periodic/30min /root/etc/periodic/hourly /root/etc/periodic/daily /root/etc/periodic/weekly /root/etc/periodic/monthly /root/etc/periodic/yearly
+RUN chmod 1777 /root/tmp /root/var/tmp
+COPY --from=cron cron /root/usr/bin/cron
+COPY periodic /root/etc/cron.d/periodic
 
-FROM mwaeckerlin/scratch as production
-ENV CONTAINERNAME "cron"
-COPY --from=prepare / /
-CMD ["/entrypoint.sh"]
+#### build the final image ####
+# the final image has no shell and nothing that is not required
+FROM mwaeckerlin/scratch
+ENV CONTAINERNAME="cron"
+ENV CRON_DEBUG="0"
+ENTRYPOINT ["/usr/bin/cron"]
+COPY --from=build /root/ /

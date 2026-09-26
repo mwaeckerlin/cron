@@ -1,0 +1,10 @@
+# jobs of the e2e suite, see tests/run-e2e.sh; the programs are found in PATH
+CRON_E2E_VAR="value from the crontab"
+@reboot echo reboot-marker
+@reboot sleep 600
+* * * * * echo "two words" 'single $quoted' plain\ escaped
+* * * * * printenv CRON_E2E_VAR CRON_E2E_CONTAINER
+* * * * * id -u
+* * * * * false
+* * * * * touch /tmp/written /var/tmp/written
+${CRON_E2E_SCHEDULE} echo ${CRON_E2E_WORDS}

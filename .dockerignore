@@ -1,0 +1,8 @@
+.gitignore
+.git
+*.md
+LICENSE
+demo
+tests
+node_modules
+*~

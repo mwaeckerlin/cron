@@ -1,0 +1,2 @@
+# the name contains a dot, so cron must ignore this file and say so
+* * * * * /bin/echo MUST-NOT-RUN
