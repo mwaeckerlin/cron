@@ -120,6 +120,51 @@ else
     _fail variable_errors_reported "exit status ${RC}: ${UNSET}"
 fi
 
+echo "==> Schedules of the periodic directories (CRON_DAILY, CRON_WEEKLY, CRON_MONTHLY, CRON_YEARLY)"
+CHECK=$(docker run --rm --pull=never "${IMAGE}" --check /etc/cron.d/periodic --at 2026-02-27T23:59)
+if grep -qxF "/etc/cron.d/periodic:12 next 2026-02-28 02:00 /usr/bin/cron --run-parts /etc/periodic/daily" <<< "${CHECK}" \
+    && grep -qxF "/etc/cron.d/periodic:13 next 2026-02-28 03:00 /usr/bin/cron --run-parts /etc/periodic/weekly" <<< "${CHECK}" \
+    && grep -qxF "/etc/cron.d/periodic:14 next 2026-03-01 05:00 /usr/bin/cron --run-parts /etc/periodic/monthly" <<< "${CHECK}" \
+    && grep -qxF "/etc/cron.d/periodic:15 next 2027-01-01 01:00 /usr/bin/cron --run-parts /etc/periodic/yearly" <<< "${CHECK}"; then
+    _pass periodic_schedule_defaults
+else
+    _fail periodic_schedule_defaults "${CHECK}"
+fi
+CHECK=$(docker run --rm --pull=never -e "CRON_DAILY=30 4 * * *" -e "CRON_WEEKLY=0 6 * * sun" -e "CRON_MONTHLY=@monthly" \
+    -e "CRON_YEARLY=0 0 1 7 *" "${IMAGE}" --check /etc/cron.d/periodic --at 2026-02-27T23:59)
+if grep -qxF "/etc/cron.d/periodic:12 next 2026-02-28 04:30 /usr/bin/cron --run-parts /etc/periodic/daily" <<< "${CHECK}" \
+    && grep -qxF "/etc/cron.d/periodic:13 next 2026-03-01 06:00 /usr/bin/cron --run-parts /etc/periodic/weekly" <<< "${CHECK}" \
+    && grep -qxF "/etc/cron.d/periodic:14 next 2026-03-01 00:00 /usr/bin/cron --run-parts /etc/periodic/monthly" <<< "${CHECK}" \
+    && grep -qxF "/etc/cron.d/periodic:15 next 2026-07-01 00:00 /usr/bin/cron --run-parts /etc/periodic/yearly" <<< "${CHECK}"; then
+    _pass periodic_schedule_override
+else
+    _fail periodic_schedule_override "${CHECK}"
+fi
+set +e
+PERIODIC=$(docker run --rm --pull=never -e "CRON_DAILY=0 2 * * * /bin/echo injected" -e "CRON_WEEKLY=0 3 * *" \
+    "${IMAGE}" --check /etc/cron.d/periodic --at 2026-02-27T23:59 2>&1)
+RC=$?
+set -e
+if [[ ${RC} -eq 1 ]] \
+    && grep -qF "error: /etc/cron.d/periodic:12: CRON_DAILY must be a schedule, five time fields or one of @reboot" <<< "${PERIODIC}" \
+    && grep -qF "error: /etc/cron.d/periodic:13: CRON_WEEKLY must be a schedule, five time fields or one of @reboot" <<< "${PERIODIC}" \
+    && ! grep -qE '^/etc/cron.d/periodic:1[23] next ' <<< "${PERIODIC}"; then
+    _pass periodic_schedule_invalid_reported
+else
+    _fail periodic_schedule_invalid_reported "exit status ${RC}: ${PERIODIC}"
+fi
+set +e
+PERIODIC=$(docker run --rm --pull=never -e "CRON_DAILY=0 2 * * * /bin/echo injected" -e "CRON_E2E_SCHEDULE=* * * * *" \
+    -e "CRON_E2E_WORDS=words" "${IMAGE}" 2>&1)
+RC=$?
+set -e
+if [[ ${RC} -eq 1 ]] && grep -qF "**** cron: ERROR /etc/cron.d/periodic:12: CRON_DAILY must be a schedule" <<< "${PERIODIC}" \
+    && grep -qF "not started, 1 errors in /etc/cron.d" <<< "${PERIODIC}"; then
+    _pass periodic_schedule_invalid_refuses_start
+else
+    _fail periodic_schedule_invalid_refuses_start "exit status ${RC}: ${PERIODIC}"
+fi
+
 echo "==> A crontab with an error stops the start"
 set +e
 BROKEN=$(docker compose --profile broken run --rm broken 2>&1)

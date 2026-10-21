@@ -18,5 +18,9 @@ COPY periodic /root/etc/cron.d/periodic
 FROM mwaeckerlin/scratch
 ENV CONTAINERNAME="cron"
 ENV CRON_DEBUG="0"
+ENV CRON_DAILY="0 2 * * *"
+ENV CRON_WEEKLY="0 3 * * 6"
+ENV CRON_MONTHLY="0 5 1 * *"
+ENV CRON_YEARLY="0 1 1 1 *"
 ENTRYPOINT ["/usr/bin/cron"]
 COPY --from=build /root/ /

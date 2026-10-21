@@ -54,7 +54,15 @@ The e2e stack (`tests/e2e/`) builds `mwaeckerlin/cron` from this project's sourc
 - **F12** `tests/run-e2e.sh` › variable_errors_reported — an unset variable, `${1BAD}` and an unclosed `${` are reported with file and line, status 1.
 - **F12** `tests/run-e2e.sh` › variable_job_runs — a job whose schedule and arguments come from the container environment runs every minute and prints them.
 - **F11** `tests/run-e2e.sh` › tmp_and_var_tmp_writable — a job writes to `/tmp` and `/var/tmp`.
+- **F13** `tests/run-e2e.sh` › periodic_schedule_defaults — without a value, `cron --check /etc/cron.d/periodic` lists daily at 02:00, weekly on Saturday 03:00, monthly on the 1st 05:00 and yearly on 1 January 01:00.
+- **F13** `tests/run-e2e.sh` › periodic_schedule_override — `CRON_DAILY=30 4 * * *`, `CRON_WEEKLY=0 6 * * sun`, `CRON_MONTHLY=@monthly` and `CRON_YEARLY=0 0 1 7 *` move the four lines to those times.
+- **F13** `tests/run-e2e.sh` › periodic_schedule_invalid_reported — a command appended to `CRON_DAILY` and four fields in `CRON_WEEKLY` are reported with line and variable name, status 1, and the appended command is never listed as a job.
+- **F13** `tests/run-e2e.sh` › periodic_schedule_invalid_refuses_start — a container with a command appended to `CRON_DAILY` does not start and names the variable.
 
 ## Image contract (`tests/image-contract.sh`)
 
 - **F11** `tests/image-contract.sh` › no sh, no bash, no busybox, no perl, runs unprivileged — for `mwaeckerlin/cron` and the derived `mwaeckerlin/cron-demo`.
+
+## Docs contract (`tests/docs-contract.sh`)
+
+- **F13** `tests/docs-contract.sh` › every_variable_documented — every `CRON_*` variable the Dockerfile sets stands in the configuration table of the README.

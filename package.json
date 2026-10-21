@@ -1,6 +1,6 @@
 {
   "name": "@mwaeckerlin/cron",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "scripts": {
     "build": "docker compose build",
     "start": "docker compose up --build --force-recreate --remove-orphans",

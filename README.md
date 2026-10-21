@@ -94,12 +94,12 @@ Every executable file in one of these directories runs at its interval, one afte
 | `/etc/periodic/15min` | every 15 minutes |
 | `/etc/periodic/30min` | every 30 minutes |
 | `/etc/periodic/hourly` | at minute 0 of every hour |
-| `/etc/periodic/daily` | at 02:00 |
-| `/etc/periodic/weekly` | on Saturday at 03:00 |
-| `/etc/periodic/monthly` | on the 1st at 05:00 |
-| `/etc/periodic/yearly` | on 1 January at 01:00 |
+| `/etc/periodic/daily` | at 02:00, `CRON_DAILY` |
+| `/etc/periodic/weekly` | on Saturday at 03:00, `CRON_WEEKLY` |
+| `/etc/periodic/monthly` | on the 1st at 05:00, `CRON_MONTHLY` |
+| `/etc/periodic/yearly` | on 1 January at 01:00, `CRON_YEARLY` |
 
-The schedule for these directories is the crontab `/etc/cron.d/periodic`; a derived image may replace it.
+The schedule for these directories is the crontab `/etc/cron.d/periodic`. The times of the daily, weekly, monthly and yearly directories come from the variables in [Configuration](#configuration), so a deployment moves them without a new image; a derived image may still replace the whole crontab.
 
 ## Configuration
 
@@ -107,6 +107,16 @@ The schedule for these directories is the crontab `/etc/cron.d/periodic`; a deri
 | --- | --- | --- |
 | `CRON_DEBUG` | `0` | `0` logs failed jobs; `1` or higher also logs every start and end |
 | `TZ` | UTC | time zone of the schedules, as a POSIX string, for Central Europe `CET-1CEST,M3.5.0,M10.5.0/3` |
+| `CRON_DAILY` | `0 2 * * *` | schedule of `/etc/periodic/daily` |
+| `CRON_WEEKLY` | `0 3 * * 6` | schedule of `/etc/periodic/weekly` |
+| `CRON_MONTHLY` | `0 5 1 * *` | schedule of `/etc/periodic/monthly` |
+| `CRON_YEARLY` | `0 1 1 1 *` | schedule of `/etc/periodic/yearly` |
+
+A schedule variable takes the five time fields of a crontab line or one of `@reboot`, `@yearly`, `@annually`, `@monthly`, `@weekly`, `@daily`, `@midnight`, `@hourly`. Any other value, a command appended to the fields included, stops the start with the name of the variable; `--check` shows the resulting times:
+
+```sh
+docker run --rm -e "CRON_DAILY=30 4 * * *" mwaeckerlin/cron --check /etc/cron.d/periodic
+```
 
 ## Log
 

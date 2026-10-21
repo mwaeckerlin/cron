@@ -8,7 +8,8 @@
 #   1. a feature number is defined more than once in FEATURES.md,
 #   2. a feature has no test entry in TESTS.md (untested feature),
 #   3. TESTS.md references a feature number that does not exist,
-#   4. a test script skips a test.
+#   4. a test script skips a test,
+#   5. a CRON_* variable of the Dockerfile is missing in the README.
 #
 # Usage: tests/docs-contract.sh
 
@@ -62,6 +63,16 @@ if [[ -f FEATURES.md && -f TESTS.md ]]; then
     else
         _pass "no_dangling_references"
     fi
+fi
+
+UNDOCUMENTED=""
+for v in $(grep -oE '^ENV CRON_[A-Z_]+=' Dockerfile | sed 's/^ENV //; s/=$//'); do
+    grep -qF "| \`${v}\` |" README.md || UNDOCUMENTED="${UNDOCUMENTED} ${v}"
+done
+if [[ -n "${UNDOCUMENTED}" ]]; then
+    _fail "every_variable_documented" "missing in the configuration table of README.md:${UNDOCUMENTED}"
+else
+    _pass "every_variable_documented"
 fi
 
 SKIPS=$(grep -nE '^\s*_skip|SKIP ' tests/*.sh | grep -v 'docs-contract.sh')

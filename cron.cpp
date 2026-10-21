@@ -23,7 +23,9 @@ day-of-week when both are restricted) or one of @reboot, @yearly,
 command. A line NAME=value sets an environment variable for the jobs
 below it in the same file. Before a line is parsed, every ${NAME} in it
 is replaced by that variable of the container's environment, in the time
-fields as in the command; a variable that is not set is an error. Command
+fields as in the command; a variable that is not set is an error.
+CRON_DAILY, CRON_WEEKLY, CRON_MONTHLY and CRON_YEARLY, the schedules of
+the periodic crontab, must hold a schedule and nothing else. Command
 lines know "double" and 'single'
 quotes and backslash escapes; unquoted shell syntax (| & ; < > $ ` ( ))
 is refused with a message, because nothing would interpret it.
@@ -221,6 +223,39 @@ std::vector<std::string> split_command(const std::string &text) {
   return args;
 }
 
+// the first `count` whitespace separated words of s; `rest` is the remainder
+std::vector<std::string> words(const std::string &s, std::size_t count, std::string &rest) {
+  std::vector<std::string> out;
+  std::size_t pos = 0;
+  while (out.size() < count) {
+    const auto b = s.find_first_not_of(" \t", pos);
+    if (b == std::string::npos) break;
+    const auto e = s.find_first_of(" \t", b);
+    out.push_back(s.substr(b, e == std::string::npos ? std::string::npos : e - b));
+    pos = e == std::string::npos ? s.size() : e;
+  }
+  rest = trim(s.substr(std::min(pos, s.size())));
+  return out;
+}
+
+// the schedules of the periodic crontab; a value with more or fewer words
+// would move the command of its line
+const std::vector<std::string> SCHEDULE_VARIABLES = {"CRON_DAILY", "CRON_WEEKLY", "CRON_MONTHLY", "CRON_YEARLY"};
+
+void check_schedule_variable(const std::string &name, const std::string &value) {
+  std::string rest;
+  const auto fields = words(value, 6, rest);
+  const bool macro = fields.size() == 1 && (lower(fields[0]) == "@reboot" || MACROS.count(lower(fields[0])) > 0);
+  const bool five = fields.size() == 5 && std::all_of(fields.begin(), fields.end(), [](const std::string &f) {
+                      return std::all_of(f.begin(), f.end(), [](unsigned char c) {
+                        return std::isalnum(c) || c == '*' || c == ',' || c == '-' || c == '/';
+                      });
+                    });
+  if (!macro && !five)
+    throw std::runtime_error(name + " must be a schedule, five time fields or one of @reboot, @yearly, @annually, "
+                                    "@monthly, @weekly, @daily, @midnight, @hourly, but is '" + value + "'");
+}
+
 // replaces every ${NAME} in a crontab line by that variable of the
 // container's environment, before the line is parsed; the value is split
 // into arguments like the rest of the line and never reaches a shell
@@ -242,6 +277,8 @@ std::string expand(const std::string &line) {
                                "with a digit");
     const char *value = std::getenv(name.c_str());
     if (!value) throw std::runtime_error("the environment variable " + name + " is not set");
+    if (std::find(SCHEDULE_VARIABLES.begin(), SCHEDULE_VARIABLES.end(), name) != SCHEDULE_VARIABLES.end())
+      check_schedule_variable(name, value);
     out += value;
     pos = end + 1;
   }
@@ -273,21 +310,6 @@ std::string resolve(const std::string &program) {
   throw std::runtime_error("program '" + program + "' not found" +
                            (program.find('/') == std::string::npos ? " in PATH" : "") +
                            ", the derived image has to bring it along");
-}
-
-// the first `count` whitespace separated words of s; `rest` is the remainder
-std::vector<std::string> words(const std::string &s, std::size_t count, std::string &rest) {
-  std::vector<std::string> out;
-  std::size_t pos = 0;
-  while (out.size() < count) {
-    const auto b = s.find_first_not_of(" \t", pos);
-    if (b == std::string::npos) break;
-    const auto e = s.find_first_of(" \t", b);
-    out.push_back(s.substr(b, e == std::string::npos ? std::string::npos : e - b));
-    pos = e == std::string::npos ? s.size() : e;
-  }
-  rest = trim(s.substr(std::min(pos, s.size())));
-  return out;
 }
 
 bool matches(const Schedule &s, const std::tm &t) {

@@ -1,5 +1,9 @@
 # Changelog
 
+- 2026-10-22 **1.4.3**
+    - The times of the daily, weekly, monthly and yearly periodic directories are set at deployment with `CRON_DAILY`, `CRON_WEEKLY`, `CRON_MONTHLY` and `CRON_YEARLY`; without them the times stay 02:00, Saturday 03:00, the 1st at 05:00 and 1 January at 01:00
+    - A value that is not a schedule stops the start with the name of the variable, so it can never add a command to the crontab
+
 - 2026-09-26 **1.4.2**
     - The end to end suite tests the image built in the same run on every architecture; it had tested the last published image, so arm64 failed on an image that existed only for amd64
 
